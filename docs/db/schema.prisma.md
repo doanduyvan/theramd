@@ -1,0 +1,919 @@
+generator client {
+provider = "prisma-client-js"
+}
+
+datasource db {
+provider = "mysql"
+url = env("DATABASE_URL")
+}
+
+enum CustomerStatus {
+active
+inactive
+banned
+
+@@map("customer_status_enum")
+}
+
+enum AdminStatus {
+active
+inactive
+blocked
+
+@@map("admin_status_enum")
+}
+
+enum GeneralStatus {
+active
+inactive
+
+@@map("general_status_enum")
+}
+
+enum ProductStatus {
+draft
+active
+inactive
+archived
+
+@@map("product_status_enum")
+}
+
+enum ProductType {
+simple
+variant
+
+@@map("product_type_enum")
+}
+
+enum VariantStatus {
+active
+inactive
+
+@@map("variant_status_enum")
+}
+
+enum PaymentMethod {
+cod
+bank_transfer
+vnpay
+momo
+zalopay
+stripe
+paypal
+
+@@map("payment_method_enum")
+}
+
+enum OrderPaymentStatus {
+unpaid
+partial
+paid
+failed
+refunded
+partially_refunded
+
+@@map("order_payment_status_enum")
+}
+
+enum PaymentStatus {
+pending
+paid
+failed
+cancelled
+refunded
+partially_refunded
+
+@@map("payment_status_enum")
+}
+
+enum OrderStatus {
+pending
+confirmed
+processing
+shipping
+completed
+cancelled
+returned
+
+@@map("order_status_enum")
+}
+
+enum ShipmentStatus {
+pending_pickup
+pre_transit
+in_transit
+out_for_delivery
+delivered
+failed_attempt
+exception
+returned
+unknown
+
+@@map("shipment_status_enum")
+}
+
+enum RefundStatus {
+pending
+approved
+rejected
+completed
+
+@@map("refund_status_enum")
+}
+
+enum ReviewStatus {
+pending
+approved
+rejected
+
+@@map("review_status_enum")
+}
+
+enum CouponStatus {
+active
+inactive
+
+@@map("coupon_status_enum")
+}
+
+enum DiscountType {
+percent
+fixed_order
+fixed_product
+free_shipping
+
+@@map("discount_type_enum")
+}
+
+enum CouponConditionType {
+category
+product
+first_order
+
+@@map("coupon_condition_type_enum")
+}
+
+enum InventoryTransactionType {
+import
+export
+adjustment
+reservation
+release
+
+@@map("inventory_transaction_type_enum")
+}
+
+enum Gender {
+male
+female
+other
+
+@@map("gender_enum")
+}
+
+model Customer {
+id BigInt @id @default(autoincrement()) @db.BigInt
+fullName String @map("full_name") @db.VarChar(150)
+email String @unique @db.VarChar(150)
+phone String? @unique @db.VarChar(20)
+passwordHash String @map("password_hash") @db.VarChar(255)
+gender Gender?
+birthDate DateTime? @map("birth_date") @db.Date
+avatar String? @db.VarChar(255)
+status CustomerStatus @default(active)
+emailVerifiedAt DateTime? @map("email_verified_at") @db.Timestamp(0)
+lastLoginAt DateTime? @map("last_login_at") @db.Timestamp(0)
+createdAt DateTime? @map("created_at") @db.Timestamp(0)
+updatedAt DateTime? @map("updated_at") @db.Timestamp(0)
+
+customerAddresses CustomerAddress[]
+carts Cart[]
+couponUsages CouponUsage[]
+orders Order[]
+reviews Review[]
+wishlists Wishlist[]
+
+@@index([email], map: "idx_customers_email")
+@@index([phone], map: "idx_customers_phone")
+@@index([status], map: "idx_customers_status")
+@@map("customers")
+}
+
+model CustomerAddress {
+id BigInt @id @default(autoincrement()) @db.BigInt
+customerId BigInt @map("customer_id") @db.BigInt
+recipientName String @map("recipient_name") @db.VarChar(150)
+recipientPhone String @map("recipient_phone") @db.VarChar(20)
+province String @db.VarChar(100)
+district String @db.VarChar(100)
+ward String @db.VarChar(100)
+addressLine String @map("address_line") @db.Text
+postalCode String? @map("postal_code") @db.VarChar(20)
+isDefault Boolean @map("is_default") @default(false)
+createdAt DateTime? @map("created_at") @db.Timestamp(0)
+updatedAt DateTime? @map("updated_at") @db.Timestamp(0)
+
+customer Customer @relation(fields: [customerId], references: [id])
+
+@@index([customerId], map: "idx_customer_addresses_customer")
+@@map("customer_addresses")
+}
+
+model Admin {
+id BigInt @id @default(autoincrement()) @db.BigInt
+fullName String @map("full_name") @db.VarChar(150)
+email String @unique @db.VarChar(150)
+phone String? @unique @db.VarChar(20)
+passwordHash String @map("password_hash") @db.VarChar(255)
+avatar String? @db.VarChar(255)
+status AdminStatus @default(active)
+lastLoginAt DateTime? @map("last_login_at") @db.Timestamp(0)
+createdAt DateTime? @map("created_at") @db.Timestamp(0)
+updatedAt DateTime? @map("updated_at") @db.Timestamp(0)
+
+adminRoles AdminRole[]
+createdProducts Product[] @relation("ProductCreatedBy")
+updatedProducts Product[] @relation("ProductUpdatedBy")
+inventoryTransactions InventoryTransaction[] @relation("InventoryTransactionCreatedBy")
+orderStatusHistoryChanges OrderStatusHistory[] @relation("OrderStatusHistoryChangedBy")
+
+@@index([email], map: "idx_admins_email")
+@@index([phone], map: "idx_admins_phone")
+@@index([status], map: "idx_admins_status")
+@@map("admins")
+}
+
+model Role {
+id BigInt @id @default(autoincrement()) @db.BigInt
+name String @unique @db.VarChar(100)
+code String @unique @db.VarChar(100)
+description String? @db.VarChar(255)
+createdAt DateTime? @map("created_at") @db.Timestamp(0)
+updatedAt DateTime? @map("updated_at") @db.Timestamp(0)
+
+adminRoles AdminRole[]
+rolePermissions RolePermission[]
+
+@@map("roles")
+}
+
+model Permission {
+id BigInt @id @default(autoincrement()) @db.BigInt
+name String @db.VarChar(150)
+code String @unique @db.VarChar(150)
+module String @db.VarChar(100)
+description String? @db.VarChar(255)
+createdAt DateTime? @map("created_at") @db.Timestamp(0)
+updatedAt DateTime? @map("updated_at") @db.Timestamp(0)
+
+rolePermissions RolePermission[]
+
+@@index([module], map: "idx_permissions_module")
+@@map("permissions")
+}
+
+model RolePermission {
+roleId BigInt @map("role_id") @db.BigInt
+permissionId BigInt @map("permission_id") @db.BigInt
+
+role Role @relation(fields: [roleId], references: [id])
+permission Permission @relation(fields: [permissionId], references: [id])
+
+@@id([roleId, permissionId])
+@@map("role_permissions")
+}
+
+model AdminRole {
+adminId BigInt @map("admin_id") @db.BigInt
+roleId BigInt @map("role_id") @db.BigInt
+
+admin Admin @relation(fields: [adminId], references: [id])
+role Role @relation(fields: [roleId], references: [id])
+
+@@id([adminId, roleId])
+@@map("admin_roles")
+}
+
+model Category {
+id BigInt @id @default(autoincrement()) @db.BigInt
+parentId BigInt? @map("parent_id") @db.BigInt
+name String @db.VarChar(150)
+slug String @unique @db.VarChar(180)
+image String? @db.VarChar(255)
+description String? @db.Text
+sortOrder Int @map("sort_order") @default(0)
+status GeneralStatus @default(active)
+createdAt DateTime? @map("created_at") @db.Timestamp(0)
+updatedAt DateTime? @map("updated_at") @db.Timestamp(0)
+
+parent Category? @relation("CategoryToChildren", fields: [parentId], references: [id])
+children Category[] @relation("CategoryToChildren")
+products Product[]
+
+@@index([parentId], map: "idx_categories_parent")
+@@index([slug], map: "idx_categories_slug")
+@@index([status], map: "idx_categories_status")
+@@map("categories")
+}
+
+model Product {
+id BigInt @id @default(autoincrement()) @db.BigInt
+categoryId BigInt? @map("category_id") @db.BigInt
+name String @db.VarChar(255)
+slug String @unique @db.VarChar(255)
+shortDescription String? @map("short_description") @db.VarChar(500)
+description String? @db.Text
+ingredientsContent String? @map("ingredients_content") @db.Text
+usageInstructions String? @map("usage_instructions") @db.Text
+storageInstructions String? @map("storage_instructions") @db.Text
+warningText String? @map("warning_text") @db.Text
+originCountry String? @map("origin_country") @db.VarChar(100)
+productType ProductType @map("product_type") @default(variant)
+status ProductStatus @default(draft)
+isFeatured Boolean @map("is_featured") @default(false)
+seoTitle String? @map("seo_title") @db.VarChar(255)
+seoDescription String? @map("seo_description") @db.VarChar(500)
+createdBy BigInt? @map("created_by") @db.BigInt
+updatedBy BigInt? @map("updated_by") @db.BigInt
+createdAt DateTime? @map("created_at") @db.Timestamp(0)
+updatedAt DateTime? @map("updated_at") @db.Timestamp(0)
+
+category Category? @relation(fields: [categoryId], references: [id])
+createdByAdmin Admin? @relation("ProductCreatedBy", fields: [createdBy], references: [id])
+updatedByAdmin Admin? @relation("ProductUpdatedBy", fields: [updatedBy], references: [id])
+productImages ProductImage[]
+productVariants ProductVariant[]
+couponConditions CouponCondition[]
+orderItems OrderItem[]
+productSkinTypes ProductSkinType[]
+productSkinConcerns ProductSkinConcern[]
+reviews Review[]
+wishlistItems WishlistItem[]
+
+@@index([categoryId], map: "idx_products_category")
+@@index([slug], map: "idx_products_slug")
+@@index([status], map: "idx_products_status")
+@@index([isFeatured], map: "idx_products_featured")
+@@map("products")
+}
+
+model ProductVariant {
+id BigInt @id @default(autoincrement()) @db.BigInt
+productId BigInt @map("product_id") @db.BigInt
+sku String @unique @db.VarChar(100)
+barcode String? @unique @db.VarChar(100)
+variantName String @map("variant_name") @db.VarChar(255)
+optionSummary String? @map("option_summary") @db.VarChar(255)
+volumeMl Decimal? @map("volume_ml") @db.Decimal(10, 2)
+weightG Decimal? @map("weight_g") @db.Decimal(10, 2)
+costPrice Decimal @map("cost_price") @default(0) @db.Decimal(15, 2)
+price Decimal @db.Decimal(15, 2)
+compareAtPrice Decimal? @map("compare_at_price") @db.Decimal(15, 2)
+status VariantStatus @default(active)
+isDefault Boolean @map("is_default") @default(false)
+createdAt DateTime? @map("created_at") @db.Timestamp(0)
+updatedAt DateTime? @map("updated_at") @db.Timestamp(0)
+
+product Product @relation(fields: [productId], references: [id])
+cartItems CartItem[]
+inventoryItems Inventory[]
+inventoryTransactions InventoryTransaction[]
+orderItems OrderItem[]
+variantAttributeValues VariantAttributeValue[]
+
+@@index([productId], map: "idx_variants_product")
+@@index([sku], map: "idx_variants_sku")
+@@index([barcode], map: "idx_variants_barcode")
+@@index([price], map: "idx_variants_price")
+@@index([status], map: "idx_variants_status")
+@@map("product_variants")
+}
+
+model ProductImage {
+id BigInt @id @default(autoincrement()) @db.BigInt
+productId BigInt @map("product_id") @db.BigInt
+imageUrl String @map("image_url") @db.VarChar(255)
+altText String? @map("alt_text") @db.VarChar(255)
+sortOrder Int @map("sort_order") @default(0)
+isPrimary Boolean @map("is_primary") @default(false)
+createdAt DateTime? @map("created_at") @db.Timestamp(0)
+
+product Product @relation(fields: [productId], references: [id])
+
+@@index([productId], map: "idx_product_images_product")
+@@map("product_images")
+}
+
+model Attribute {
+id BigInt @id @default(autoincrement()) @db.BigInt
+name String @unique @db.VarChar(100)
+createdAt DateTime? @map("created_at") @db.Timestamp(0)
+updatedAt DateTime? @map("updated_at") @db.Timestamp(0)
+
+attributeValues AttributeValue[]
+
+@@map("attributes")
+}
+
+model AttributeValue {
+id BigInt @id @default(autoincrement()) @db.BigInt
+attributeId BigInt @map("attribute_id") @db.BigInt
+value String @db.VarChar(100)
+createdAt DateTime? @map("created_at") @db.Timestamp(0)
+updatedAt DateTime? @map("updated_at") @db.Timestamp(0)
+
+attribute Attribute @relation(fields: [attributeId], references: [id])
+variantAttributeValues VariantAttributeValue[]
+
+@@unique([attributeId, value], map: "uk_attribute_value")
+@@index([attributeId], map: "idx_attribute_values_attribute")
+@@map("attribute_values")
+}
+
+model VariantAttributeValue {
+variantId BigInt @map("variant_id") @db.BigInt
+attributeValueId BigInt @map("attribute_value_id") @db.BigInt
+
+variant ProductVariant @relation(fields: [variantId], references: [id])
+attributeValue AttributeValue @relation(fields: [attributeValueId], references: [id])
+
+@@id([variantId, attributeValueId])
+@@map("variant_attribute_values")
+}
+
+model SkinType {
+id BigInt @id @default(autoincrement()) @db.BigInt
+name String @unique @db.VarChar(100)
+
+productSkinTypes ProductSkinType[]
+
+@@map("skin_types")
+}
+
+model SkinConcern {
+id BigInt @id @default(autoincrement()) @db.BigInt
+name String @unique @db.VarChar(100)
+
+productSkinConcerns ProductSkinConcern[]
+
+@@map("skin_concerns")
+}
+
+model ProductSkinType {
+productId BigInt @map("product_id") @db.BigInt
+skinTypeId BigInt @map("skin_type_id") @db.BigInt
+
+product Product @relation(fields: [productId], references: [id])
+skinType SkinType @relation(fields: [skinTypeId], references: [id])
+
+@@id([productId, skinTypeId])
+@@map("product_skin_types")
+}
+
+model ProductSkinConcern {
+productId BigInt @map("product_id") @db.BigInt
+skinConcernId BigInt @map("skin_concern_id") @db.BigInt
+
+product Product @relation(fields: [productId], references: [id])
+skinConcern SkinConcern @relation(fields: [skinConcernId], references: [id])
+
+@@id([productId, skinConcernId])
+@@map("product_skin_concerns")
+}
+
+model Warehouse {
+id BigInt @id @default(autoincrement()) @db.BigInt
+name String @db.VarChar(150)
+code String @unique @db.VarChar(50)
+address String? @db.Text
+createdAt DateTime? @map("created_at") @db.Timestamp(0)
+updatedAt DateTime? @map("updated_at") @db.Timestamp(0)
+
+inventoryItems Inventory[]
+inventoryTransactions InventoryTransaction[]
+
+@@map("warehouses")
+}
+
+model Inventory {
+id BigInt @id @default(autoincrement()) @db.BigInt
+warehouseId BigInt @map("warehouse_id") @db.BigInt
+variantId BigInt @map("variant_id") @db.BigInt
+quantity Int @default(0)
+reservedQuantity Int @map("reserved_quantity") @default(0)
+minStock Int @map("min_stock") @default(0)
+
+warehouse Warehouse @relation(fields: [warehouseId], references: [id])
+variant ProductVariant @relation(fields: [variantId], references: [id])
+
+@@unique([warehouseId, variantId], map: "uk_warehouse_variant")
+@@index([warehouseId], map: "idx_inventory_warehouse")
+@@index([variantId], map: "idx_inventory_variant")
+@@map("inventory")
+}
+
+model InventoryTransaction {
+id BigInt @id @default(autoincrement()) @db.BigInt
+warehouseId BigInt @map("warehouse_id") @db.BigInt
+variantId BigInt @map("variant_id") @db.BigInt
+type InventoryTransactionType
+quantity Int
+referenceType String? @map("reference_type") @db.VarChar(50)
+referenceId BigInt? @map("reference_id") @db.BigInt
+note String? @db.VarChar(255)
+createdBy BigInt? @map("created_by") @db.BigInt
+createdAt DateTime? @map("created_at") @db.Timestamp(0)
+
+warehouse Warehouse @relation(fields: [warehouseId], references: [id])
+variant ProductVariant @relation(fields: [variantId], references: [id])
+createdByAdmin Admin? @relation("InventoryTransactionCreatedBy", fields: [createdBy], references: [id])
+
+@@index([warehouseId], map: "idx_inventory_tx_warehouse")
+@@index([variantId], map: "idx_inventory_tx_variant")
+@@index([referenceId], map: "idx_inventory_tx_reference")
+@@map("inventory_transactions")
+}
+
+model Cart {
+id BigInt @id @default(autoincrement()) @db.BigInt
+customerId BigInt? @map("customer_id") @db.BigInt
+sessionToken String? @map("session_token") @unique @db.VarChar(255)
+createdAt DateTime? @map("created_at") @db.Timestamp(0)
+updatedAt DateTime? @map("updated_at") @db.Timestamp(0)
+
+customer Customer? @relation(fields: [customerId], references: [id])
+cartItems CartItem[]
+
+@@index([customerId], map: "idx_carts_customer")
+@@map("carts")
+}
+
+model CartItem {
+id BigInt @id @default(autoincrement()) @db.BigInt
+cartId BigInt @map("cart_id") @db.BigInt
+variantId BigInt @map("variant_id") @db.BigInt
+quantity Int @default(1)
+createdAt DateTime? @map("created_at") @db.Timestamp(0)
+updatedAt DateTime? @map("updated_at") @db.Timestamp(0)
+
+cart Cart @relation(fields: [cartId], references: [id])
+variant ProductVariant @relation(fields: [variantId], references: [id])
+
+@@unique([cartId, variantId], map: "uk_cart_variant")
+@@map("cart_items")
+}
+
+model Wishlist {
+id BigInt @id @default(autoincrement()) @db.BigInt
+customerId BigInt @map("customer_id") @db.BigInt
+createdAt DateTime? @map("created_at") @db.Timestamp(0)
+updatedAt DateTime? @map("updated_at") @db.Timestamp(0)
+
+customer Customer @relation(fields: [customerId], references: [id])
+wishlistItems WishlistItem[]
+
+@@index([customerId], map: "idx_wishlists_customer")
+@@map("wishlists")
+}
+
+model WishlistItem {
+id BigInt @id @default(autoincrement()) @db.BigInt
+wishlistId BigInt @map("wishlist_id") @db.BigInt
+productId BigInt @map("product_id") @db.BigInt
+createdAt DateTime? @map("created_at") @db.Timestamp(0)
+
+wishlist Wishlist @relation(fields: [wishlistId], references: [id])
+product Product @relation(fields: [productId], references: [id])
+
+@@unique([wishlistId, productId], map: "uk_wishlist_product")
+@@map("wishlist_items")
+}
+
+model Order {
+id BigInt @id @default(autoincrement()) @db.BigInt
+customerId BigInt? @map("customer_id") @db.BigInt
+orderCode String @map("order_code") @unique @db.VarChar(50)
+customerName String @map("customer_name") @db.VarChar(150)
+customerPhone String @map("customer_phone") @db.VarChar(20)
+customerEmail String? @map("customer_email") @db.VarChar(150)
+shippingRecipientName String @map("shipping_recipient_name") @db.VarChar(150)
+shippingPhone String @map("shipping_phone") @db.VarChar(20)
+shippingProvince String @map("shipping_province") @db.VarChar(100)
+shippingDistrict String @map("shipping_district") @db.VarChar(100)
+shippingWard String @map("shipping_ward") @db.VarChar(100)
+shippingAddressLine String @map("shipping_address_line") @db.Text
+note String? @db.Text
+subtotal Decimal @default(0) @db.Decimal(15, 2)
+discountAmount Decimal @map("discount_amount") @default(0) @db.Decimal(15, 2)
+shippingFee Decimal @map("shipping_fee") @default(0) @db.Decimal(15, 2)
+taxAmount Decimal @map("tax_amount") @default(0) @db.Decimal(15, 2)
+grandTotal Decimal @map("grand_total") @default(0) @db.Decimal(15, 2)
+couponCode String? @map("coupon_code") @db.VarChar(100)
+paymentStatus OrderPaymentStatus @map("payment_status") @default(unpaid)
+orderStatus OrderStatus @map("order_status") @default(pending)
+createdAt DateTime? @map("created_at") @db.Timestamp(0)
+updatedAt DateTime? @map("updated_at") @db.Timestamp(0)
+
+customer Customer? @relation(fields: [customerId], references: [id])
+couponUsages CouponUsage[]
+orderItems OrderItem[]
+orderStatusHistory OrderStatusHistory[]
+payments Payment[]
+refunds Refund[]
+shipments Shipment[]
+
+@@index([customerId], map: "idx_orders_customer")
+@@index([orderCode], map: "idx_orders_code")
+@@index([paymentStatus], map: "idx_orders_payment_status")
+@@index([orderStatus], map: "idx_orders_order_status")
+@@index([createdAt], map: "idx_orders_created_at")
+@@map("orders")
+}
+
+model OrderItem {
+id BigInt @id @default(autoincrement()) @db.BigInt
+orderId BigInt @map("order_id") @db.BigInt
+productId BigInt @map("product_id") @db.BigInt
+variantId BigInt @map("variant_id") @db.BigInt
+productName String @map("product_name") @db.VarChar(255)
+variantName String? @map("variant_name") @db.VarChar(255)
+sku String @db.VarChar(100)
+unitPrice Decimal @map("unit_price") @db.Decimal(15, 2)
+compareAtPrice Decimal? @map("compare_at_price") @db.Decimal(15, 2)
+discountAmount Decimal @map("discount_amount") @default(0) @db.Decimal(15, 2)
+quantity Int
+lineTotal Decimal @map("line_total") @db.Decimal(15, 2)
+createdAt DateTime? @map("created_at") @db.Timestamp(0)
+updatedAt DateTime? @map("updated_at") @db.Timestamp(0)
+
+order Order @relation(fields: [orderId], references: [id])
+product Product @relation(fields: [productId], references: [id])
+variant ProductVariant @relation(fields: [variantId], references: [id])
+refundItems RefundItem[]
+reviews Review[]
+shipmentItems ShipmentItem[]
+
+@@index([orderId], map: "idx_order_items_order")
+@@index([productId], map: "idx_order_items_product")
+@@index([variantId], map: "idx_order_items_variant")
+@@map("order_items")
+}
+
+model OrderStatusHistory {
+id BigInt @id @default(autoincrement()) @db.BigInt
+orderId BigInt @map("order_id") @db.BigInt
+oldStatus String? @map("old_status") @db.VarChar(50)
+newStatus String @map("new_status") @db.VarChar(50)
+note String? @db.VarChar(255)
+changedBy BigInt? @map("changed_by") @db.BigInt
+createdAt DateTime? @map("created_at") @db.Timestamp(0)
+
+order Order @relation(fields: [orderId], references: [id])
+changedByAdmin Admin? @relation("OrderStatusHistoryChangedBy", fields: [changedBy], references: [id])
+
+@@index([orderId], map: "idx_order_status_history_order")
+@@map("order_status_history")
+}
+
+model Payment {
+id BigInt @id @default(autoincrement()) @db.BigInt
+orderId BigInt @map("order_id") @db.BigInt
+paymentMethod PaymentMethod @map("payment_method")
+amount Decimal @db.Decimal(15, 2)
+status PaymentStatus @default(pending)
+transactionCode String? @map("transaction_code") @db.VarChar(100)
+paidAt DateTime? @map("paid_at") @db.Timestamp(0)
+createdAt DateTime? @map("created_at") @db.Timestamp(0)
+updatedAt DateTime? @map("updated_at") @db.Timestamp(0)
+
+order Order @relation(fields: [orderId], references: [id])
+paymentTransactions PaymentTransaction[]
+refunds Refund[]
+
+@@index([orderId], map: "idx_payments_order")
+@@index([status], map: "idx_payments_status")
+@@index([transactionCode], map: "idx_payments_transaction_code")
+@@map("payments")
+}
+
+model PaymentTransaction {
+id BigInt @id @default(autoincrement()) @db.BigInt
+paymentId BigInt @map("payment_id") @db.BigInt
+gateway String @db.VarChar(50)
+transactionRef String? @map("transaction_ref") @db.VarChar(150)
+transactionType String @map("transaction_type") @db.VarChar(50)
+amount Decimal @db.Decimal(15, 2)
+rawResponse String? @map("raw_response") @db.Text
+status String @db.VarChar(50)
+createdAt DateTime? @map("created_at") @db.Timestamp(0)
+
+payment Payment @relation(fields: [paymentId], references: [id])
+
+@@index([paymentId], map: "idx_payment_transactions_payment")
+@@index([transactionRef], map: "idx_payment_transactions_ref")
+@@map("payment_transactions")
+}
+
+model Shipment {
+id BigInt @id @default(autoincrement()) @db.BigInt
+orderId BigInt @map("order_id") @db.BigInt
+shippingProvider String? @map("shipping_provider") @db.VarChar(100)
+trackingNumber String? @map("tracking_number") @db.VarChar(100)
+trackingUrl String? @map("tracking_url") @db.VarChar(255)
+shippingStatus ShipmentStatus @map("shipping_status") @default(pending_pickup)
+carrierStatusCode String? @map("carrier_status_code") @db.VarChar(100)
+carrierStatusText String? @map("carrier_status_text") @db.VarChar(255)
+deliveryFailedReason String? @map("delivery_failed_reason") @db.VarChar(255)
+shippedAt DateTime? @map("shipped_at") @db.Timestamp(0)
+deliveredAt DateTime? @map("delivered_at") @db.Timestamp(0)
+lastTrackingAt DateTime? @map("last_tracking_at") @db.Timestamp(0)
+createdAt DateTime? @map("created_at") @db.Timestamp(0)
+updatedAt DateTime? @map("updated_at") @db.Timestamp(0)
+
+order Order @relation(fields: [orderId], references: [id])
+shipmentItems ShipmentItem[]
+shipmentTrackingEvents ShipmentTrackingEvent[]
+
+@@index([orderId], map: "idx_shipments_order")
+@@index([shippingStatus], map: "idx_shipments_status")
+@@index([lastTrackingAt], map: "idx_shipments_last_tracking_at")
+@@unique([shippingProvider, trackingNumber], map: "uk_shipments_provider_tracking")
+@@map("shipments")
+}
+
+model ShipmentItem {
+id BigInt @id @default(autoincrement()) @db.BigInt
+shipmentId BigInt @map("shipment_id") @db.BigInt
+orderItemId BigInt @map("order_item_id") @db.BigInt
+quantity Int
+
+shipment Shipment @relation(fields: [shipmentId], references: [id])
+orderItem OrderItem @relation(fields: [orderItemId], references: [id])
+
+@@index([shipmentId], map: "idx_shipment_items_shipment")
+@@index([orderItemId], map: "idx_shipment_items_order_item")
+@@map("shipment_items")
+}
+
+model ShipmentTrackingEvent {
+id BigInt @id @default(autoincrement()) @db.BigInt
+shipmentId BigInt @map("shipment_id") @db.BigInt
+statusCode String @map("status_code") @db.VarChar(100)
+statusText String @map("status_text") @db.VarChar(255)
+substatusCode String? @map("substatus_code") @db.VarChar(100)
+substatusText String? @map("substatus_text") @db.VarChar(255)
+location String? @db.VarChar(255)
+eventTime DateTime? @map("event_time") @db.Timestamp(0)
+rawPayload String? @map("raw_payload") @db.Text
+createdAt DateTime? @map("created_at") @db.Timestamp(0)
+
+shipment Shipment @relation(fields: [shipmentId], references: [id])
+
+@@index([shipmentId], map: "idx_shipment_tracking_events_shipment")
+@@index([statusCode], map: "idx_shipment_tracking_events_status_code")
+@@index([eventTime], map: "idx_shipment_tracking_events_event_time")
+@@map("shipment_tracking_events")
+}
+
+model Refund {
+id BigInt @id @default(autoincrement()) @db.BigInt
+orderId BigInt @map("order_id") @db.BigInt
+paymentId BigInt? @map("payment_id") @db.BigInt
+refundCode String @map("refund_code") @unique @db.VarChar(50)
+amount Decimal @db.Decimal(15, 2)
+reason String? @db.Text
+status RefundStatus @default(pending)
+createdAt DateTime? @map("created_at") @db.Timestamp(0)
+updatedAt DateTime? @map("updated_at") @db.Timestamp(0)
+
+order Order @relation(fields: [orderId], references: [id])
+payment Payment? @relation(fields: [paymentId], references: [id])
+refundItems RefundItem[]
+
+@@index([orderId], map: "idx_refunds_order")
+@@index([paymentId], map: "idx_refunds_payment")
+@@index([refundCode], map: "idx_refunds_code")
+@@map("refunds")
+}
+
+model RefundItem {
+id BigInt @id @default(autoincrement()) @db.BigInt
+refundId BigInt @map("refund_id") @db.BigInt
+orderItemId BigInt @map("order_item_id") @db.BigInt
+quantity Int
+amount Decimal @db.Decimal(15, 2)
+
+refund Refund @relation(fields: [refundId], references: [id])
+orderItem OrderItem @relation(fields: [orderItemId], references: [id])
+
+@@index([refundId], map: "idx_refund_items_refund")
+@@index([orderItemId], map: "idx_refund_items_order_item")
+@@map("refund_items")
+}
+
+model Coupon {
+id BigInt @id @default(autoincrement()) @db.BigInt
+code String @unique @db.VarChar(100)
+name String @db.VarChar(150)
+description String? @db.Text
+discountType DiscountType @map("discount_type")
+discountValue Decimal @map("discount_value") @default(0) @db.Decimal(15, 2)
+minOrderValue Decimal? @map("min_order_value") @db.Decimal(15, 2)
+maxDiscountValue Decimal? @map("max_discount_value") @db.Decimal(15, 2)
+usageLimit Int? @map("usage_limit")
+usageLimitPerCustomer Int? @map("usage_limit_per_customer")
+startAt DateTime? @map("start_at") @db.Timestamp(0)
+endAt DateTime? @map("end_at") @db.Timestamp(0)
+status CouponStatus @default(active)
+createdAt DateTime? @map("created_at") @db.Timestamp(0)
+updatedAt DateTime? @map("updated_at") @db.Timestamp(0)
+
+couponConditions CouponCondition[]
+couponUsages CouponUsage[]
+
+@@index([code], map: "idx_coupons_code")
+@@index([status], map: "idx_coupons_status")
+@@map("coupons")
+}
+
+model CouponCondition {
+id BigInt @id @default(autoincrement()) @db.BigInt
+couponId BigInt @map("coupon_id") @db.BigInt
+conditionType CouponConditionType @map("condition_type")
+conditionValue String @map("condition_value") @db.VarChar(255)
+
+coupon Coupon @relation(fields: [couponId], references: [id])
+
+@@index([couponId], map: "idx_coupon_conditions_coupon")
+@@map("coupon_conditions")
+}
+
+model CouponUsage {
+id BigInt @id @default(autoincrement()) @db.BigInt
+couponId BigInt @map("coupon_id") @db.BigInt
+customerId BigInt? @map("customer_id") @db.BigInt
+orderId BigInt? @map("order_id") @db.BigInt
+usedAt DateTime? @map("used_at") @db.Timestamp(0)
+
+coupon Coupon @relation(fields: [couponId], references: [id])
+customer Customer? @relation(fields: [customerId], references: [id])
+order Order? @relation(fields: [orderId], references: [id])
+
+@@index([couponId], map: "idx_coupon_usages_coupon")
+@@index([customerId], map: "idx_coupon_usages_customer")
+@@index([orderId], map: "idx_coupon_usages_order")
+@@map("coupon_usages")
+}
+
+model Review {
+id BigInt @id @default(autoincrement()) @db.BigInt
+productId BigInt @map("product_id") @db.BigInt
+customerId BigInt @map("customer_id") @db.BigInt
+orderItemId BigInt? @map("order_item_id") @db.BigInt
+rating Int
+title String? @db.VarChar(255)
+content String? @db.Text
+isVerifiedPurchase Boolean @map("is_verified_purchase") @default(false)
+status ReviewStatus @default(pending)
+createdAt DateTime? @map("created_at") @db.Timestamp(0)
+updatedAt DateTime? @map("updated_at") @db.Timestamp(0)
+
+product Product @relation(fields: [productId], references: [id])
+customer Customer @relation(fields: [customerId], references: [id])
+orderItem OrderItem? @relation(fields: [orderItemId], references: [id])
+reviewImages ReviewImage[]
+
+@@index([productId], map: "idx_reviews_product")
+@@index([customerId], map: "idx_reviews_customer")
+@@index([status], map: "idx_reviews_status")
+@@map("reviews")
+}
+
+model ReviewImage {
+id BigInt @id @default(autoincrement()) @db.BigInt
+reviewId BigInt @map("review_id") @db.BigInt
+imageUrl String @map("image_url") @db.VarChar(255)
+createdAt DateTime? @map("created_at") @db.Timestamp(0)
+
+review Review @relation(fields: [reviewId], references: [id])
+
+@@index([reviewId], map: "idx_review_images_review")
+@@map("review_images")
+}
+
+model Banner {
+id BigInt @id @default(autoincrement()) @db.BigInt
+title String @db.VarChar(255)
+imageUrl String @map("image_url") @db.VarChar(255)
+linkUrl String? @map("link_url") @db.VarChar(255)
+position String? @db.VarChar(100)
+sortOrder Int @map("sort_order") @default(0)
+status GeneralStatus @default(active)
+createdAt DateTime? @map("created_at") @db.Timestamp(0)
+updatedAt DateTime? @map("updated_at") @db.Timestamp(0)
+
+@@index([position], map: "idx_banners_position")
+@@index([status], map: "idx_banners_status")
+@@map("banners")
+}
