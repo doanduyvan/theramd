@@ -1,3 +1,5 @@
 node_modules
 dist
-.envgi
+.env
+/generated/prisma
+/generated/prisma
