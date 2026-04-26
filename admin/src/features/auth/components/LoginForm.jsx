@@ -90,7 +90,7 @@ export default function LoginForm({
       </form> */}
 
       <form onSubmit={handleSubmit} className="space-y-5">
-        <div>
+        <div className="mb-0">
           <label
             htmlFor="email"
             className="mb-2 block text-sm font-medium text-slate-200"
@@ -109,6 +109,15 @@ export default function LoginForm({
           {errors.email && (
             <p className="mt-2 text-sm text-red-400">{errors.email}</p>
           )}
+        </div>
+
+        <div className="mt-1 mb-0 text-right">
+          <Link
+            to={PATHS.FORGOTPASSWORD}
+            className="text-sm text-sky-300 transition hover:text-sky-200"
+          >
+            Quên mật khẩu?
+          </Link>
         </div>
 
         <div>

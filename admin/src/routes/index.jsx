@@ -6,6 +6,7 @@ import MainLayout from "@/layouts/MainLayout";
 import AuthLayout from "@/layouts/AuthLayout";
 
 import { LoginPage, ForgotPasswordPage } from "@/features/auth/pages";
+import { Test } from "@/features/scanner/pages";
 
 import DashboardPage from "@/features/dashboard/pages/DashboardPage";
 import NotFoundPage from "@/pages/NotFoundPage";
@@ -14,7 +15,7 @@ const Home = () => <div>home</div>;
 
 export const router = createBrowserRouter([
   {
-    element: <ProtectedRoute />,
+    // element: <ProtectedRoute />,
     children: [
       {
         path: "/",
@@ -29,13 +30,16 @@ export const router = createBrowserRouter([
             path: PATHS.DASHBOARD,
             element: <DashboardPage />,
           },
+          {
+            path: "testqr",
+            element: <Test />,
+          },
         ],
       },
     ],
   },
 
   {
-    path: "/",
     element: <AuthLayout />,
     children: [
       {
