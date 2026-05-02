@@ -58,6 +58,8 @@ export function useLoginForm(options = {}) {
   }
 
   function validateForm() {
+    const passLength = 3;
+
     const nextErrors = {};
 
     if (!values.email.trim()) {
@@ -68,8 +70,8 @@ export function useLoginForm(options = {}) {
 
     if (!values.password) {
       nextErrors.password = "Vui lòng nhập mật khẩu.";
-    } else if (values.password.length < 6) {
-      nextErrors.password = "Mật khẩu phải có ít nhất 6 ký tự.";
+    } else if (values.password.length < passLength) {
+      nextErrors.password = `Mật khẩu phải có ít nhất ${passLength} ký tự.`;
     }
 
     setErrors(nextErrors);
@@ -85,29 +87,16 @@ export function useLoginForm(options = {}) {
     setIsSubmitting(true);
     setServerError("");
 
-    // console.log(values);
-    // setIsSubmitting(false);
-    // return;
-
     try {
-      if (shouldGetCsrfCookie) {
-        await authService.getCsrfCookie(csrfUrl);
-      }
-
       const result = await authService.login({
         email: values.email.trim(),
         password: values.password,
         remember: values.remember,
       });
 
-      if (!result?.authenticated || !result?.user) {
-        throw new Error(result?.message || "Đăng nhập thất bại.");
-      }
-
-      // Session nằm ở cookie, store chỉ giữ user + trạng thái đăng nhập
       setCredentials({
-        user: result.user,
-        accessToken: null,
+        user: result.data,
+        accessToken: result.data.token,
       });
 
       if (typeof onSuccess === "function") {
@@ -116,7 +105,13 @@ export function useLoginForm(options = {}) {
 
       navigate(redirectTo, { replace: true });
     } catch (error) {
+      if (error.status == 401) {
+        setServerError("Thông tin đăng nhập không chính xác");
+        return;
+      }
+
       const message =
+        "Lỗi hệ thống!" ||
         error?.response?.data?.message ||
         error?.message ||
         "Đăng nhập thất bại. Vui lòng thử lại.";

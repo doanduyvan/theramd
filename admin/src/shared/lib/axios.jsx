@@ -1,5 +1,6 @@
 // src/shared/lib/axios.js
 import axios from "axios";
+import { useAuthStore } from "@/features/auth/store/authStore";
 
 const CONTENT_TYPES = {
   JSON: "application/json",
@@ -40,13 +41,8 @@ function buildRequestConfig(options = {}, data) {
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
-  withCredentials: true,
-  timeout: 10000,
-
-  // CSRF / XSRF
-  // Đổi lại cho đúng tên cookie/header backend của bạn nếu cần.
-  xsrfCookieName: "XSRF-TOKEN",
-  xsrfHeaderName: "X-XSRF-TOKEN",
+  withCredentials: false,
+  timeout: 30000,
 
   headers: {
     Accept: "application/json",
@@ -56,6 +52,12 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     config.headers = config.headers || {};
+
+    const accessToken = useAuthStore.getState().accessToken;
+
+    if (accessToken) {
+      config.headers.Authorization = `Bearer ${accessToken}`;
+    }
 
     // Nếu request dùng FormData thật mà header bị set cứng multipart/form-data,
     // nên bỏ đi để browser tự thêm boundary.
@@ -77,6 +79,10 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    if (error?.response?.status === 401) {
+      useAuthStore.getState().logout();
+    }
+
     return Promise.reject(error);
   },
 );

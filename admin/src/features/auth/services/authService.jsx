@@ -39,7 +39,7 @@ export async function login(payload, requestConfig = {}) {
     requestConfig,
   );
 
-  return normalizeAuthResponse(response.data);
+  return response.data;
 }
 
 /**
@@ -81,7 +81,7 @@ export async function forgotPassword(payload, requestConfig = {}) {
  */
 export async function getMe(requestConfig = {}) {
   const response = await get("/auth/me", requestConfig);
-  return normalizeAuthResponse(response.data);
+  return response.data;
 }
 
 /**

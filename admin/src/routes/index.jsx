@@ -1,11 +1,15 @@
 import { createBrowserRouter } from "react-router-dom";
 import { PATHS } from "./paths";
 import ProtectedRoute from "./ProtectedRoute";
+import GuestRoute from "./GuestRoute";
 
 import MainLayout from "@/layouts/MainLayout";
 import AuthLayout from "@/layouts/AuthLayout";
 
 import { LoginPage, ForgotPasswordPage } from "@/features/auth/pages";
+import { Products } from "@/features/products/pages";
+import { Orders } from "@/features/orders/pages";
+
 import { Test } from "@/features/scanner/pages";
 
 import DashboardPage from "@/features/dashboard/pages/DashboardPage";
@@ -15,7 +19,7 @@ const Home = () => <div>home</div>;
 
 export const router = createBrowserRouter([
   {
-    // element: <ProtectedRoute />,
+    element: <ProtectedRoute />,
     children: [
       {
         path: "/",
@@ -31,6 +35,14 @@ export const router = createBrowserRouter([
             element: <DashboardPage />,
           },
           {
+            path: PATHS.PRODUCTS,
+            element: <Products />,
+          },
+          {
+            path: PATHS.ORDERS,
+            element: <Orders />,
+          },
+          {
             path: "testqr",
             element: <Test />,
           },
@@ -40,15 +52,20 @@ export const router = createBrowserRouter([
   },
 
   {
-    element: <AuthLayout />,
+    element: <GuestRoute />,
     children: [
       {
-        path: PATHS.LOGIN,
-        element: <LoginPage />,
-      },
-      {
-        path: PATHS.FORGOTPASSWORD,
-        element: <ForgotPasswordPage />,
+        element: <AuthLayout />,
+        children: [
+          {
+            path: PATHS.LOGIN,
+            element: <LoginPage />,
+          },
+          {
+            path: PATHS.FORGOTPASSWORD,
+            element: <ForgotPasswordPage />,
+          },
+        ],
       },
     ],
   },

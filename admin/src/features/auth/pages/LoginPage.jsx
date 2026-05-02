@@ -9,10 +9,7 @@ export default function LoginPage() {
     isSubmitting,
     handleChange,
     handleSubmit,
-  } = useLoginForm({
-    shouldGetCsrfCookie: true,
-    csrfUrl: "/csrf-cookie",
-  });
+  } = useLoginForm();
 
   return (
     <LoginForm

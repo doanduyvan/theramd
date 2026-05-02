@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import { PATHS } from "@/routes/paths";
-import { Button } from "antd";
-import { Spin } from "antd";
+import { Input, Spin } from "antd";
 import { LoadingOutlined } from "@ant-design/icons";
 
 export default function LoginForm({
@@ -97,7 +96,7 @@ export default function LoginForm({
           >
             Email
           </label>
-          <input
+          <Input
             id="email"
             name="email"
             type="email"
@@ -127,15 +126,16 @@ export default function LoginForm({
           >
             Mật khẩu
           </label>
-          <input
+
+          <Input.Password
             id="password"
             name="password"
-            type="password"
             value={values.password}
             onChange={handleChange}
             placeholder="Nhập mật khẩu"
             className="w-full rounded-2xl border border-white/10 bg-slate-900/70 px-4 py-3 text-sm text-white outline-none"
           />
+
           {errors.password && (
             <p className="mt-2 text-sm text-red-400">{errors.password}</p>
           )}

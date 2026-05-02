@@ -4,4 +4,6 @@ export const PATHS = {
   PROFILE: "/profile",
   LOGIN: "/login",
   FORGOTPASSWORD: "/forgot-password",
+  PRODUCTS: "/products",
+  ORDERS: "/orders",
 };
