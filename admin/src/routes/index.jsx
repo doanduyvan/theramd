@@ -10,7 +10,7 @@ import { LoginPage, ForgotPasswordPage } from "@/features/auth/pages";
 import { Products } from "@/features/products/pages";
 import { Orders } from "@/features/orders/pages";
 
-import { Test } from "@/features/scanner/pages";
+import { QRScan } from "@/features/scanner/pages";
 
 import DashboardPage from "@/features/dashboard/pages/DashboardPage";
 import NotFoundPage from "@/pages/NotFoundPage";
@@ -43,8 +43,8 @@ export const router = createBrowserRouter([
             element: <Orders />,
           },
           {
-            path: "testqr",
-            element: <Test />,
+            path: "orders/:orderId/qr-scan",
+            element: <QRScan />,
           },
         ],
       },

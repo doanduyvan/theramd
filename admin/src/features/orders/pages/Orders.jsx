@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Button,
   Descriptions,
@@ -10,7 +11,12 @@ import {
   Typography,
   Grid,
 } from "antd";
-import { EyeOutlined, ReloadOutlined, SyncOutlined } from "@ant-design/icons";
+import {
+  EyeOutlined,
+  QrcodeOutlined,
+  ReloadOutlined,
+  SyncOutlined,
+} from "@ant-design/icons";
 import useOrders from "../hooks/useOrders";
 
 const { Title, Text } = Typography;
@@ -62,10 +68,16 @@ export default function Orders() {
     getOrders,
     syncOrders,
   } = useOrders();
-
+  const navigate = useNavigate();
   const [selectedOrder, setSelectedOrder] = useState(null);
   const screens = useBreakpoint();
   const isMobile = !screens.md;
+
+  function handleScanQr(order) {
+    navigate(`/orders/${order.id}/qr-scan`, {
+      state: { order },
+    });
+  }
 
   const itemColumns = [
     {
@@ -104,6 +116,18 @@ export default function Orders() {
   ];
 
   const columns = [
+    {
+      title: "",
+      width: "auto",
+      fixed: isMobile ? false : "right",
+      render: (_, order) => (
+        <Button
+          type="primary"
+          icon={<QrcodeOutlined />}
+          onClick={() => handleScanQr(order)}
+        ></Button>
+      ),
+    },
     {
       title: "Đơn hàng",
       key: "order",
@@ -172,12 +196,17 @@ export default function Orders() {
     {
       title: "",
       key: "action",
-      width: 110,
+      // width: 220,
       fixed: isMobile ? false : "right",
       render: (_, order) => (
-        <Button icon={<EyeOutlined />} onClick={() => setSelectedOrder(order)}>
-          Chi tiết
-        </Button>
+        <Space>
+          <Button
+            icon={<EyeOutlined />}
+            onClick={() => setSelectedOrder(order)}
+          >
+            Chi tiết
+          </Button>
+        </Space>
       ),
     },
   ];
@@ -289,263 +318,3 @@ export default function Orders() {
     </div>
   );
 }
-
-/**
- {
-
-    Code UI phù hợp bạn hãy suy nghĩ thật kĩ trước khi làm, vì đây là dữ liệu được lấy từ Sapo nên tôi chưa chưa xác định được trường nào cần hiển thị trường nào không cần hiển thị, bạn hãy suy nghĩ và đánh giá xem nên hiển thị UI đơn hàng như thế nào cho Admin, tùy bạn chọn.
-    dưới đây là cấu trúc từng đối tượng có trong mảng orders.
-    và trên UI có phân trang và có button "Đồng bộ đơn hàng", button đồng bộ này hiện tại chỉ cần có UI, tôi chưa sử lí logic nên bỏ qua
-
-    "id": 3,
-    "id_sapo": 172260407,
-    "email": "foo@example.com",
-    "phone": null,
-    "status": "closed",
-    "full_fields": {
-        "id": 172260407,
-        "buyer_accepts_marketing": false,
-        "cancel_reason": "wrong_item",
-        "cancelled_on": "2026-04-30T15:57:12Z",
-        "confirmed_on": "2026-04-26T16:01:56Z",
-        "cart_token": null,
-        "checkout_token": null,
-        "closed_on": "2026-04-30T15:57:13Z",
-        "created_on": "2026-04-26T16:01:56Z",
-        "currency": "VND",
-        "email": "foo@example.com",
-        "phone": null,
-        "customer_group_id": null,
-        "fulfillment_status": null,
-        "financial_status": "pending",
-        "issue_status": "pending",
-        "status": "closed",
-        "return_status": "no_return",
-        "name": "THR11008",
-        "note": null,
-        "number": 8,
-        "order_number": 1008,
-        "processed_on": "2026-04-26T16:01:56Z",
-        "processing_method": null,
-        "source_url": null,
-        "source_name": "from api duyvan",
-        "source_category": null,
-        "source": "a9b1ac1b45d14ea0b159708f84f6d0a1",
-        "landing_site": null,
-        "landing_site_ref": null,
-        "referring_site": null,
-        "reference": null,
-        "source_identifier": null,
-        "gateway": null,
-        "token": "0909bf563c3147e08753ae7307bf44a7",
-        "total_discounts": 0,
-        "total_line_items_price": 781000,
-        "total_price": 781000,
-        "total_weight": 200,
-        "expected_delivery_date": null,
-        "modified_on": "2026-04-30T15:57:13Z",
-        "tags": "",
-        "pay_adjustment_status": null,
-        "test": false,
-        "completed_on": null,
-        "delivered_on": null,
-        "shipment_category": null,
-        "package_category": "single_item_quantity",
-        "shipment_deadline": null,
-        "billing_address": null,
-        "shipping_address": null,
-        "customer": {
-            "id": 41722549,
-            "state": "disabled",
-            "email": "foo@example.com",
-            "phone": null,
-            "first_name": null,
-            "last_name": null,
-            "dob": null,
-            "gender": "other",
-            "verified_email": true,
-            "accepts_marketing": false,
-            "orders_count": 2,
-            "total_spent": 0,
-            "last_order_id": 172260407,
-            "last_order_name": "THR11008",
-            "note": null,
-            "tags": "",
-            "created_on": "2026-04-26T15:49:09Z",
-            "modified_on": "2026-04-26T16:01:58Z",
-            "default_address": null
-        },
-        "user": null,
-        "assignee": null,
-        "client_details": null,
-        "line_items": [
-            {
-                "id": 287254363,
-                "price": 781000,
-                "total_discount": 0,
-                "discount_code": null,
-                "fulfillment_status": null,
-                "fulfillable_quantity": 0,
-                "quantity": 1,
-                "current_quantity": 0,
-                "grams": 200,
-                "product_id": 79224016,
-                "variant_id": 203176045,
-                "inventory_item_id": 203176043,
-                "product_exists": true,
-                "variant_inventory_management": "bizweb",
-                "requires_shipping": true,
-                "name": "Theramd A.C.N.3+PORE Control - 120ml",
-                "title": "Theramd A.C.N.3+PORE Control - 120ml",
-                "variant_title": "Default Title",
-                "sku": "THERSR-0001",
-                "vendor": "Theramd",
-                "gift_card": false,
-                "properties": [],
-                "discount_allocations": [],
-                "tax_lines": [],
-                "taxable": true,
-                "non_fulfillable_quantity": 1,
-                "refundable_quantity": 0,
-                "restockable": true,
-                "discounted_unit_price": 781000,
-                "discounted_total": 781000,
-                "original_total": 781000,
-                "fulfillment_service": "manual",
-                "merchant_editable": false,
-                "unit": "Chai",
-                "catalog_id": null,
-                "note": null,
-                "vat_pit_category_code": null,
-                "deleted": false
-            }
-        ],
-        "shipping_lines": [],
-        "fulfillments": [],
-        "refunds": [
-            {
-                "id": 25439084,
-                "order_id": 172260407,
-                "return_id": null,
-                "created_on": "2026-04-30T15:57:12Z",
-                "processed_at": "2026-04-30T15:57:12Z",
-                "restock": false,
-                "user_id": 836897,
-                "note": null,
-                "transactions": [],
-                "refund_line_items": [
-                    {
-                        "id": 31994918,
-                        "quantity": 1,
-                        "line_item_id": 287254363,
-                        "location_id": 911608,
-                        "subtotal": 781000,
-                        "total_tax": 0,
-                        "restock_type": "no_restock",
-                        "line_item": {
-                            "id": 287254363,
-                            "price": 781000,
-                            "total_discount": 0,
-                            "discount_code": null,
-                            "fulfillment_status": null,
-                            "fulfillable_quantity": 0,
-                            "quantity": 1,
-                            "current_quantity": 0,
-                            "grams": 200,
-                            "product_id": 79224016,
-                            "variant_id": 203176045,
-                            "inventory_item_id": 203176043,
-                            "product_exists": true,
-                            "variant_inventory_management": "bizweb",
-                            "requires_shipping": true,
-                            "name": "Theramd A.C.N.3+PORE Control - 120ml",
-                            "title": "Theramd A.C.N.3+PORE Control - 120ml",
-                            "variant_title": "Default Title",
-                            "sku": "THERSR-0001",
-                            "vendor": "Theramd",
-                            "gift_card": false,
-                            "properties": [],
-                            "taxable": true,
-                            "non_fulfillable_quantity": 1,
-                            "refundable_quantity": 0,
-                            "restockable": true,
-                            "discounted_unit_price": 781000,
-                            "discounted_total": 781000,
-                            "original_total": 781000,
-                            "fulfillment_service": "manual",
-                            "merchant_editable": false,
-                            "unit": "Chai",
-                            "catalog_id": null,
-                            "note": null,
-                            "vat_pit_category_code": null,
-                            "deleted": false
-                        },
-                        "total_cart_discount_amount": 0
-                    }
-                ],
-                "order_adjustments": [],
-                "total_refunded": 0
-            }
-        ],
-        "note_attributes": [],
-        "discount_codes": [],
-        "discount_applications": [],
-        "combination_lines": [],
-        "app": {
-            "id": 13583,
-            "key": "a9b1ac1b45d14ea0b159708f84f6d0a1",
-            "alias": "test"
-        },
-        "channel_definition": null,
-        "user_id": null,
-        "assignee_id": null,
-        "location_id": 911608,
-        "payment_gateway_names": [],
-        "can_mark_as_paid": false,
-        "capturable": false,
-        "tax_exempt": false,
-        "taxes_included": false,
-        "tax_lines": [],
-        "total_shipping_price": 0,
-        "total_tax": 0,
-        "original_total_price": 781000,
-        "cart_discount_amount": 0,
-        "net_payment": 0,
-        "unpaid_amount": 0,
-        "total_outstanding": 0,
-        "total_received": 0,
-        "total_refunded": 0,
-        "total_refunded_shipping": 0,
-        "current_cart_discount_amount": 0,
-        "current_total_discounts": 0,
-        "current_subtotal_price": 0,
-        "current_total_price": 0,
-        "current_total_tax": 0,
-        "current_discounted_total": 0,
-        "current_tax_lines": [],
-        "print_count": 0,
-        "invoices": [],
-        "preorder": false,
-        "sla": {
-            "fast": null,
-            "confirm": null,
-            "avoid_cancellation": null
-        },
-        "feature_version": 4165,
-        "can_notify_customer": true,
-        "current_total_weight": 0,
-        "merchant_editable_errors": null,
-        "delivery_time_remaining": null,
-        "refundable": false,
-        "edited": false,
-        "current_subtotal_line_items_quantity": 0,
-        "merchant_editable": false,
-        "browser_ip": null,
-        "subtotal_line_items_quantity": 1,
-        "sub_total_price": 781000,
-        "subtotal_price": 781000
-    },
-    "created_at": "2026-05-02T16:20:05.000000Z",
-    "updated_at": "2026-05-02T16:20:05.000000Z"
-}
- */

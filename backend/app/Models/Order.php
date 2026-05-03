@@ -21,4 +21,9 @@ class Order extends Model
             'full_fields' => 'array',
         ];
     }
+
+    public function qrProductCodes()
+    {
+        return $this->hasMany(QrProductCode::class);
+    }
 }

@@ -1,10 +1,11 @@
 import { Scanner } from "@yudiel/react-qr-scanner";
 import { useState, useRef } from "react";
-import { Button } from "antd";
+import QRService from "../services/QRService";
 
-export default function Test() {
+export default function useQRScan(idOrder, order) {
   const [codes, setCodes] = useState({});
   const [paused, setPaused] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const scannerRef = useRef(null);
   const codesRef = useRef({});
@@ -100,44 +101,31 @@ export default function Test() {
     alert(err?.message || "Không mở được camera");
   };
 
-  return (
-    <div ref={scannerRef}>
-      <Scanner
-        onScan={handleScan}
-        onError={handleError}
-        constraints={{ facingMode: "environment" }}
-        formats={["qr_code"]}
-        sound={false}
-        paused={paused}
-        allowMultiple={true}
-        components={{
-          finder: true,
-          onOff: true,
-          audio: false,
-          tracker: (detectedCodes, ctx) => {
-            detectedCodes.forEach((code) => {
-              const box = code.boundingBox;
+  async function createQR() {
+    setIsLoading(true);
+    try {
+      //
+      const scannedCodes = Object.values(codes);
 
-              ctx.strokeStyle = "#00ff00";
-              ctx.lineWidth = 4;
-              ctx.strokeRect(box.x, box.y, box.width, box.height);
-            });
-          },
-        }}
-      />
+      console.log("id order", idOrder);
+      console.log("qrs", scannedCodes);
+    } catch (e) {
+      //
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
-      <button onClick={() => setPaused((prev) => !prev)}>
-        {paused ? "Bật camera" : "Tắt camera"}
-      </button>
-
-      <Button onClick={handleReset}>Reset QR</Button>
-
-      <h3>Danh sách QR: {Object.values(codes).length}</h3>
-      <ul>
-        {Object.values(codes).map((code) => (
-          <li key={code}>{code}</li>
-        ))}
-      </ul>
-    </div>
-  );
+  return {
+    codes,
+    setCodes,
+    paused,
+    setPaused,
+    scannerRef,
+    codesRef,
+    handleScan,
+    handleReset,
+    handleError,
+    createQR,
+  };
 }
