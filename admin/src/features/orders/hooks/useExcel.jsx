@@ -32,17 +32,20 @@ export default function useExcel() {
             },
           ];
 
-      if (index === orders.length - 1) {
-        return orderRows;
-      }
+      return orderRows;
 
-      return [
-        ...orderRows,
-        {
-          "Mã đơn hàng": "",
-          "Mã QR": "",
-        },
-      ];
+      // thêm khoảng trống giữa các đơn hàng
+      // if (index === orders.length - 1) {
+      //   return orderRows;
+      // }
+
+      // return [
+      //   ...orderRows,
+      //   {
+      //     "Mã đơn hàng": "",
+      //     "Mã QR": "",
+      //   },
+      // ];
     });
 
     const worksheet = XLSX.utils.json_to_sheet(rows);
