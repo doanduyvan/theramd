@@ -87,3 +87,4 @@ volumes:
 
 # đoạn xin cert đầu tiên, chỉ chạy service nginx
 # docker compose run --rm certbot certonly --webroot -w /var/www/certbot -d odinn.site -d www.odinn.site --email duyvanlee2001@gmail.com --agree-tos --no-eff-email
+# docker compose run --rm certbot certonly --webroot -w /var/www/certbot -d odinn.site --email duyvanlee2001@gmail.com --agree-tos --no-eff-email
