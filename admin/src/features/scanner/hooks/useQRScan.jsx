@@ -1,12 +1,15 @@
 import { Scanner } from "@yudiel/react-qr-scanner";
 import { useState, useRef } from "react";
 import QRService from "../services/QRService";
+import { notification, Modal } from "antd";
+import { useNavigate } from "react-router-dom";
 
 export default function useQRScan(idOrder, order) {
+  const navigate = useNavigate();
+
   const [codes, setCodes] = useState({});
   const [paused, setPaused] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
   const scannerRef = useRef(null);
   const codesRef = useRef({});
 
@@ -104,13 +107,59 @@ export default function useQRScan(idOrder, order) {
   async function createQR() {
     setIsLoading(true);
     try {
-      //
       const scannedCodes = Object.values(codes);
 
-      console.log("id order", idOrder);
-      console.log("qrs", scannedCodes);
+      if (scannedCodes.length == 0)
+        return notification.info({ title: "Chưa có QR" });
+
+      const payload = {
+        idOrder,
+        qrs: scannedCodes,
+      };
+
+      const res = await QRService.createQR(payload);
+      // notification.success({ title: "Thêm dữ liệu thành công" });
+      console.log(res.data);
+      const result = res.data;
+      const data = result?.data || {};
+      const duplicateQrs = data?.duplicate_qrs || [];
+      Modal.confirm({
+        title: result?.message || "Lưu QR thành công",
+        okText: "OK",
+        cancelText: "Quay lại",
+        // closable: true,
+        onCancel: () => navigate(-1),
+        width: 560,
+        content: (
+          <div>
+            <p>
+              Tổng mã đã quét: <b>{data.total_received || 0}</b>
+            </p>
+            <p>
+              Số mã lưu mới: <b>{data.saved || 0}</b>
+            </p>
+            <p>
+              Số mã bị trùng: <b>{data.duplicated || 0}</b>
+            </p>
+
+            {duplicateQrs.length > 0 && (
+              <div>
+                <p>
+                  <b>Danh sách mã trùng:</b>
+                </p>
+                <div style={{ maxHeight: 180, overflowY: "auto" }}>
+                  {duplicateQrs.map((qr) => (
+                    <div key={qr}>{qr}</div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        ),
+      });
     } catch (e) {
-      //
+      console.log(e);
+      notification.error({ title: "Lỗi hệ thống!" });
     } finally {
       setIsLoading(false);
     }

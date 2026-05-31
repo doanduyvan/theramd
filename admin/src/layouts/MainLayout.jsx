@@ -53,26 +53,26 @@ const menuItems = [
     icon: <ShoppingCartOutlined />,
     label: <Link to="/orders">Đơn hàng</Link>,
   },
-  {
-    key: "/customers",
-    icon: <TeamOutlined />,
-    label: <Link to="/customers">Khách hàng</Link>,
-  },
-  {
-    key: "/promotions",
-    icon: <GiftOutlined />,
-    label: <Link to="/promotions">Khuyến mãi</Link>,
-  },
-  {
-    key: "/reports",
-    icon: <BarChartOutlined />,
-    label: <Link to="/reports">Báo cáo</Link>,
-  },
-  {
-    key: "/settings",
-    icon: <SettingOutlined />,
-    label: <Link to="/settings">Cài đặt</Link>,
-  },
+  // {
+  //   key: "/customers",
+  //   icon: <TeamOutlined />,
+  //   label: <Link to="/customers">Khách hàng</Link>,
+  // },
+  // {
+  //   key: "/promotions",
+  //   icon: <GiftOutlined />,
+  //   label: <Link to="/promotions">Khuyến mãi</Link>,
+  // },
+  // {
+  //   key: "/reports",
+  //   icon: <BarChartOutlined />,
+  //   label: <Link to="/reports">Báo cáo</Link>,
+  // },
+  // {
+  //   key: "/settings",
+  //   icon: <SettingOutlined />,
+  //   label: <Link to="/settings">Cài đặt</Link>,
+  // },
 ];
 
 function getSelectedKey(pathname) {

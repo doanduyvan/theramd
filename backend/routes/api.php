@@ -34,6 +34,8 @@ Route::prefix('v1/admin')->name('admin.')->group(function () {
     Route::get('/products', [ProductController::class, 'getProducts']);
     Route::get('/sync/orders', [OrderController::class, 'syncOrders']);
     Route::get('/orders', [OrderController::class, 'getOrders']);
+    Route::post('/orders/postqr', [OrderController::class, 'postQr']);
+
 
 
     Route::get('/test', function () {

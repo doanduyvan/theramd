@@ -312,6 +312,24 @@ export default function Orders() {
                 }}
               />
             </div>
+
+            <div>
+              <Title level={5}>QR Code</Title>
+              {selectedOrder?.qr_product_codes?.length > 0 ? (
+                <Space size={[8, 8]} wrap>
+                  {selectedOrder.qr_product_codes.map((item) => (
+                    <Tag key={item.id || item.qr_code} color="blue">
+                      {item.qr_code}
+                    </Tag>
+                  ))}
+                </Space>
+              ) : (
+                <Empty
+                  description="Chưa có mã QR"
+                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+                />
+              )}
+            </div>
           </Space>
         )}
       </Modal>

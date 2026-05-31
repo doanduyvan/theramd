@@ -19,4 +19,10 @@ class OrderController extends Controller
     {
         return $this->orderService->getOrders($request->all());
     }
+
+    public function postQr(Request $req)
+    {
+        $payload = json_decode($req->getContent(), true);
+        return $this->orderService->saveQr($payload);
+    }
 }

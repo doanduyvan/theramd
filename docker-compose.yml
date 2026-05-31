@@ -1,0 +1,86 @@
+services:
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: theramd-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./backend:/var/www/backend
+      - certbot-www:/var/www/certbot
+      - certbot-certs:/etc/letsencrypt
+    depends_on:
+      - backend
+      - admin
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: theramd-backend
+    working_dir: /var/www/backend
+    volumes:
+      - ./backend:/var/www/backend
+      - backend-vendor:/var/www/backend/vendor
+    environment:
+      APP_ENV: production
+      APP_DEBUG: false
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: theramd1
+      DB_USERNAME: theramd
+      DB_PASSWORD: theramd_password
+    depends_on:
+      - mysql
+    restart: unless-stopped
+
+  admin:
+    build:
+      context: ./admin
+      dockerfile: Dockerfile
+    container_name: theramd-admin
+    working_dir: /app
+    volumes:
+      - ./admin:/app
+      - /app/node_modules
+    environment:
+      VITE_API_URL: https://odinn.site/api/v1/admin
+    command: npm run dev -- --host 0.0.0.0
+    restart: unless-stopped
+
+  mysql:
+    image: mysql:8.4
+    container_name: theramd-mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: theramd1
+      MYSQL_USER: theramd
+      MYSQL_PASSWORD: theramd_password
+      MYSQL_ROOT_PASSWORD: root_password
+    volumes:
+      - mysql-data:/var/lib/mysql
+    restart: unless-stopped
+
+  certbot:
+    image: certbot/certbot:latest
+    container_name: theramd-certbot
+    volumes:
+      - certbot-www:/var/www/certbot
+      - certbot-certs:/etc/letsencrypt
+    command: >
+      sh -c "trap exit TERM;
+      while :; do
+        certbot renew --webroot -w /var/www/certbot;
+        sleep 12h & wait $${!};
+      done"
+    restart: unless-stopped
+
+volumes:
+  mysql-data:
+  certbot-www:
+  certbot-certs:
+  backend-vendor:

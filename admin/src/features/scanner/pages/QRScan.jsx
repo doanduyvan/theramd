@@ -91,7 +91,7 @@ export default function QRScan() {
       style={{
         position: "fixed",
         inset: 0,
-        zIndex: 9999,
+        zIndex: 100,
         background: "#fff",
         padding: isMobile ? 12 : 24,
         overflowY: "auto",
