@@ -18,6 +18,7 @@ import {
   SyncOutlined,
 } from "@ant-design/icons";
 import useOrders from "../hooks/useOrders";
+import useExcel from "../hooks/useExcel";
 
 const { Title, Text } = Typography;
 const { useBreakpoint } = Grid;
@@ -69,6 +70,7 @@ export default function Orders() {
     syncOrders,
   } = useOrders();
   const navigate = useNavigate();
+  const { exportOrderQrExcel } = useExcel();
   const [selectedOrder, setSelectedOrder] = useState(null);
   const screens = useBreakpoint();
   const isMobile = !screens.md;
@@ -240,6 +242,10 @@ export default function Orders() {
             onClick={() => syncOrders()}
           >
             Đồng bộ đơn hàng
+          </Button>
+
+          <Button type="primary" onClick={() => exportOrderQrExcel(orders)}>
+            Xuất Excel
           </Button>
         </Space>
       </Space>
