@@ -10,60 +10,60 @@ services:
       - ./backend:/var/www/backend
       - certbot-www:/var/www/certbot
       - certbot-certs:/etc/letsencrypt
-    depends_on:
-      - backend
-      - admin
+    # depends_on:
+    #   - backend
+    #   - admin
     restart: unless-stopped
 
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: theramd-backend
-    working_dir: /var/www/backend
-    volumes:
-      - ./backend:/var/www/backend
-      - backend-vendor:/var/www/backend/vendor
-    environment:
-      APP_ENV: production
-      APP_DEBUG: false
-      DB_CONNECTION: mysql
-      DB_HOST: mysql
-      DB_PORT: 3306
-      DB_DATABASE: theramd1
-      DB_USERNAME: theramd
-      DB_PASSWORD: theramd_password
-    depends_on:
-      - mysql
-    restart: unless-stopped
+  # backend:
+  #   build:
+  #     context: ./backend
+  #     dockerfile: Dockerfile
+  #   container_name: theramd-backend
+  #   working_dir: /var/www/backend
+  #   volumes:
+  #     - ./backend:/var/www/backend
+  #     - backend-vendor:/var/www/backend/vendor
+  #   environment:
+  #     APP_ENV: production
+  #     APP_DEBUG: false
+  #     DB_CONNECTION: mysql
+  #     DB_HOST: mysql
+  #     DB_PORT: 3306
+  #     DB_DATABASE: theramd1
+  #     DB_USERNAME: theramd
+  #     DB_PASSWORD: theramd_password
+  #   depends_on:
+  #     - mysql
+  #   restart: unless-stopped
 
-  admin:
-    build:
-      context: ./admin
-      dockerfile: Dockerfile
-    container_name: theramd-admin
-    working_dir: /app
-    volumes:
-      - ./admin:/app
-      - /app/node_modules
-    environment:
-      VITE_API_URL: https://odinn.site/api/v1/admin
-    command: npm run dev -- --host 0.0.0.0
-    restart: unless-stopped
+  # admin:
+  #   build:
+  #     context: ./admin
+  #     dockerfile: Dockerfile
+  #   container_name: theramd-admin
+  #   working_dir: /app
+  #   volumes:
+  #     - ./admin:/app
+  #     - /app/node_modules
+  #   environment:
+  #     VITE_API_URL: https://odinn.site/api/v1/admin
+  #   command: npm run dev -- --host 0.0.0.0
+  #   restart: unless-stopped
 
-  mysql:
-    image: mysql:8.4
-    container_name: theramd-mysql
-    ports:
-      - "3306:3306"
-    environment:
-      MYSQL_DATABASE: theramd1
-      MYSQL_USER: theramd
-      MYSQL_PASSWORD: theramd_password
-      MYSQL_ROOT_PASSWORD: root_password
-    volumes:
-      - mysql-data:/var/lib/mysql
-    restart: unless-stopped
+  # mysql:
+  #   image: mysql:8.4
+  #   container_name: theramd-mysql
+  #   ports:
+  #     - "3306:3306"
+  #   environment:
+  #     MYSQL_DATABASE: theramd1
+  #     MYSQL_USER: theramd
+  #     MYSQL_PASSWORD: theramd_password
+  #     MYSQL_ROOT_PASSWORD: root_password
+  #   volumes:
+  #     - mysql-data:/var/lib/mysql
+  #   restart: unless-stopped
 
   certbot:
     image: certbot/certbot:latest
@@ -84,3 +84,6 @@ volumes:
   certbot-www:
   certbot-certs:
   backend-vendor:
+
+# đoạn xin cert đầu tiên, chỉ chạy service nginx
+# docker compose run --rm certbot certonly --webroot -w /var/www/certbot -d odinn.site -d www.odinn.site --email duyvanlee2001@gmail.com --agree-tos --no-eff-email
