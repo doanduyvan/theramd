@@ -15,7 +15,11 @@ export default defineConfig({
     },
   },
   server: {
-    // host: "0.0.0.0",
+    host: "0.0.0.0",
+      allowedHosts: [
+      "odinn.site",
+      "www.odinn.site",
+    ],
     // https: true,
   },
 });
